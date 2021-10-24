@@ -156,7 +156,7 @@ def get_kicad_files(source):
 def kicad_builder(target, source, env):
 
     files = get_kicad_files(source[0].path)
-    kibot = 'kibot -c _kibot.yaml -b "%s" -e "%s" -d "%s"' % (files[0], files[1], target.get_path())
+    kibot = 'kibot -c _kibot.yaml -b "%s" -e "%s" -d "%s"' % (files[1], files[0], target[0].get_path())
     env.Execute(kibot)
 
     # output_str = ''
