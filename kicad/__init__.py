@@ -29,6 +29,23 @@ import os
 
 from pathlib import Path
 
+def create_kibot_config(env, path) :
+
+    config = '''kibot:
+  version: 1
+
+preflight:
+  run_erc: %s
+  update_xml: %s
+  run_drc: %s
+  check_zone_fills: %s
+  ignore_unconnected: %s
+
+''' % ('true', 'true','true','true','true')
+    
+    with open(path, 'w') as file:
+        file.write(config)
+
 # class FileSystemLoaderRecorder(FileSystemLoader):
 #     ''' A wrapper around FileSystemLoader that records files as they are
 #     loaded. These are contained within loaded_filenames set attribute.
@@ -131,12 +148,15 @@ def nbconvert_scanner(node, env, path):
     # return [env.File(f) for f in found_nodes_names]
     return []
 
+def get_kicad_files(source):
+    file = source
+    return [file.replace('.pro', '.sch'), file.replace('.pro', '.kicad_pcb')]
+
+
 def kicad_builder(target, source, env):
 
-    print("kicad builder %s" % source)
-    #path = Path(target[0].get_abspath())
-    #target = path.parent
-    kibot = 'kibot -c kibot.yaml -b "%s" -e "%s" -d "%s"' % (source[0].get_abspath(), source[1].get_abspath(), target)
+    files = get_kicad_files(source[0].path)
+    kibot = 'kibot -c _kibot.yaml -b "%s" -e "%s" -d "%s"' % (files[0], files[1], target.get_path())
     env.Execute(kibot)
 
     # output_str = ''
@@ -173,6 +193,7 @@ def generate(env):
     env['BUILDERS']['kicad'] = SCons.Builder.Builder(
             action=kicad_builder)
 
+    create_kibot_config(env, '_kibot.yaml')
 #    scanner = env.Scanner(function=nbconvert_scanner,
 #            skeys=['.ipynb'])
 
