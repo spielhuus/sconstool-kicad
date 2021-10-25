@@ -15,5 +15,15 @@ class TestParseFiles(unittest.TestCase):
     def test_pcb(self):
         self.assertEqual( kicad.get_kicad_files('/foo/bar.pro')[1], '/foo/bar.kicad_pcb')
 
+class TestParseKibot(unittest.TestCase):
+
+    def test_schema(self):
+        self.assertEqual( kicad.kibot_parser('/foo/bar.pro')[0], '/foo/bar.sch')
+
+    def test_pcb(self):
+        self.assertEqual( kicad.get_kicad_files('/foo/bar.pro')[1], '/foo/bar.kicad_pcb')
+
+
+
 if __name__ == '__main__':
     unittest.main() 

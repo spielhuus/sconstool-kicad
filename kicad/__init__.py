@@ -29,6 +29,8 @@ import os
 
 from pathlib import Path
 
+from parse_kibot import kibot_parser
+
 def create_kibot_config(env, path) :
 
     config = '''kibot:
