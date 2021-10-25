@@ -1,7 +1,8 @@
+import re
 
+def kibot_parser(source) :
 
-def kibot_parser(type, target, source) :
-
+    target = {}
     p_erc_err_drc = re.compile('^\*\* Found (.*) DRC errors \*\*$')
     p_nc_err = re.compile('^\*\* Found (.*) unconnected pads \*\*$')
     p_erc_err = re.compile('^ERC report \((.*)\)$')
@@ -13,7 +14,7 @@ def kibot_parser(type, target, source) :
     act_message = {}
     sheet_name = '/'
 
-    with open(source.get_path()) as f:
+    with open(source) as f:
         lines = f.readlines()
         for line in lines:
 
@@ -42,6 +43,6 @@ def kibot_parser(type, target, source) :
                 err = p_err_entry.match(line)
                 act_message['con'].append( {'x':err.group(1), 'y':err.group(2), 'message':err.group(3)})
 
-    return None
+    return target
 
 

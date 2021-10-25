@@ -5,12 +5,13 @@ import os
 # suitable (optional) JINJA_ENVIRONMENT_VARS configured. 
 # JINJA_ENVIRONMENT_VARS does not need to be set here. If required,
 # it need only be set on each environment at *some point*.
-env = Environment(tools=['default', 'kicad'], 
+env = Environment(ENV = {'PATH' : os.environ['PATH']},
+        tools=['default', 'kicad'], 
         KICAD_ENVIRONMENT_VARS={'trim_blocks': True})
 
 # A simple case
 #nbconvert_env = env.Clone(NBCONVERT_CONTEXT={'passed_in_str': 'Passed in string'})
-env.kicad('build', os.path.join('shifter', 'shifter.pro'))
+env.kicad('shifter_report.json', os.path.join('shifter', 'shifter.pro'))
 
 # Now with templates in different directories
 #jinja_env_2 = jinja_env.Clone(

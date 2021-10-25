@@ -29,7 +29,7 @@ import os
 
 from pathlib import Path
 
-from parse_kibot import kibot_parser
+from . import parse_kibot
 
 def create_kibot_config(env, path) :
 
@@ -158,7 +158,7 @@ def get_kicad_files(source):
 def kicad_builder(target, source, env):
 
     files = get_kicad_files(source[0].path)
-    kibot = 'kibot -c _kibot.yaml -b "%s" -e "%s" -d "%s"' % (files[1], files[0], target[0].get_path())
+    kibot = 'kibot -v -c _kibot.yaml -b "%s" -e "%s" -d "%s"' % (files[1], files[0], 'build')
     env.Execute(kibot)
 
     # output_str = ''
