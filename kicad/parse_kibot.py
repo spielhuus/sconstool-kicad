@@ -3,13 +3,11 @@ import xml.etree.ElementTree as ET
 
 def bom_parser(source) :
     
-    print('============= parse bom: %s ' % source)
     target = []
     root = ET.parse(source).getroot()
 
     for compomnents in root.findall('components'):
         for c in compomnents.findall('comp'):
-            print(c)
             if c.find('libsource').get('lib') != 'Mechanical' :
                 description = ''
                 for f in c.findall('fields/field'):

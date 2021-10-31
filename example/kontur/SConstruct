@@ -1,0 +1,17 @@
+import os
+
+env = Environment(ENV = os.environ,
+        tools=['default', 'kicad'], 
+        KICAD_ENVIRONMENT_VARS={'pcb': {'libs': ['default']}})
+
+for board in ['main', 'mount', 'panel'] :
+    kicad_project = os.path.abspath(os.path.join(board, '%s.pro' % board))
+    env.preflight(os.path.abspath('%s/kontur_%s_report.json' % (board,board)), kicad_project, chdir=board)
+    env.schema(os.path.abspath('%s/kontur_%s_schematic.pdf' % (board,board)), kicad_project, chdir=board)
+    env.pcb(os.path.abspath('%s/kontur_%s_pcb.svg' % (board,board)), kicad_project, chdir=board)
+    env.gerbers(os.path.abspath('%s/kontur_%s_JLCPCB.zip' % (board,board)), kicad_project, chdir=board)
+    env.bom(os.path.abspath('%s/kontur_%s_bom.json' % (board,board)), kicad_project, chdir=board)
+
+    Clean(os.path.join(board, '%s.pro' % board), os.path.join(board, 'fp-info-cache'))
+    Clean(os.path.join(board, '%s.pro' % board), os.path.join(board, '%s-cache.lib' % board))
+    Clean(os.path.join(board, '%s.pro' % board), Glob('%s/*-bak' % board)) 

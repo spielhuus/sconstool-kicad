@@ -70,9 +70,12 @@ def create_schema_config(env, path) :
     ]}))
     return None
 
-def create_pcbdraw_config(env, path) :
-    with open(path, 'w') as file:
-        file.write(yaml.dump({'kibot': {'version': 1}, 
+def create_pcbdraw_config(env, path, ext) :
+    dict = {}
+    if( 'KICAD_ENVIRONMENT_VARS' in env.Dictionary() and 'pcb' in env.Dictionary().get('KICAD_ENVIRONMENT_VARS')) :
+        dict = env.Dictionary().get('KICAD_ENVIRONMENT_VARS').get('pcb')
+    
+    conf = {'kibot': {'version': 1}, 
     'preflight': 
         {
          'run_erc': False, 
@@ -100,7 +103,7 @@ def create_pcbdraw_config(env, path) :
         # [list(string)=[]] list of components to highlight
         'highlight': [],
         # [list(string)=[]] list of libraries
-        'libs': ['default', 'elektrophon', 'others'],
+        'libs': dict.get('libs') if 'libs' in dict else ['default', 'elektrophon', 'others'],
         # [boolean=false] mirror the board
         'mirror': False,
         # [boolean=false] do not make holes transparent
@@ -144,7 +147,14 @@ def create_pcbdraw_config(env, path) :
         # [string='visible'] [visible,all,none] using visible only the warnings about components in the visible side are generated
         'warnings': 'visible'
         }}
-    ]}))
+    ]}
+
+#    if env['KICAD_ENVIRONMENT_VARS']['pcb'] and env['KICAD_ENVIRONMENT_VARS']['pcb']['libs'] :
+#        conf['outputs'][1]['libs'] = env['KICAD_ENVIRONMENT_VARS']['pcb']['libs']
+
+    with open(path, 'w') as file:
+        file.write(yaml.dump(conf))
+
     return None
 
 def create_gerbers_jlcbcb_config(env, path) :
@@ -251,12 +261,12 @@ def get_kicad_name(source):
 
 def kibot_bom(target, source, env):
 
-    files = get_kicad_files(source[0].path)
+    files = get_kicad_files(source[0].abspath)
     create_preflight_config(env, "kibot_preflight.yaml", update_xml=True, run_erc=False, 
                             run_drc=False, check_zone_fills=False, ignore_unconnected=True)
     kibot = 'kibot -q -c %s -b "%s" -e "%s"' % ("kibot_preflight.yaml", files[1], files[0])
     env.Execute(kibot)
-    with open(target[0].path, 'w') as file:
+    with open(target[0].abspath, 'w') as file:
         json.dump(parse_kibot.bom_parser(("%s.xml" % get_kicad_name(source[0].path))), file)
     os.remove("kibot_preflight.yaml")
     os.remove(("%s.xml" % get_kicad_name(source[0].path)))
@@ -266,11 +276,12 @@ def kibot_bom(target, source, env):
 
 def kibot_preflight(target, source, env):
 
-    files = get_kicad_files(source[0].path)
+    files = get_kicad_files(source[0].abspath)
+    print(files[0])
     create_preflight_config(env, "kibot_preflight.yaml")
     kibot = 'kibot -q -c %s -b "%s" -e "%s"' % ("kibot_preflight.yaml", files[1], files[0])
     env.Execute(kibot)
-    with open(target[0].path, 'w') as file:
+    with open(target[0].abspath, 'w') as file:
         result = []
         result.append(parse_kibot.kibot_parser(("%s-drc.txt" % get_kicad_name(source[0].path))))
         result.append(parse_kibot.kibot_parser(("%s-erc.txt" % get_kicad_name(source[0].path))))
@@ -284,31 +295,31 @@ def kibot_preflight(target, source, env):
 
 def kibot_schema(target, source, env):
 
-    files = get_kicad_files(source[0].path)
+    files = get_kicad_files(source[0].abspath)
     create_schema_config(env, "kibot_schema.yaml")
-    kibot = 'kibot -q -c %s -s all pdf_sch_print -b "%s" -e "%s"' % ("kibot_schema.yaml", files[1], files[0])
+    kibot = 'kibot -q -c %s -b "%s" -e "%s" -s all pdf_sch_print' % ("kibot_schema.yaml", files[1], files[0])
     env.Execute(kibot)
-    os.rename(("%s-schematic.pdf" % get_kicad_name(source[0].path)), target[0].path)
+    os.rename(("%s-schematic.pdf" % get_kicad_name(source[0].path)), target[0].abspath)
     os.remove("kibot_schema.yaml")
     return None
 
 def kibot_pcb(target, source, env):
 
-    files = get_kicad_files(source[0].path)
-    create_pcbdraw_config(env, "kibot_pcbdraw.yaml")
-    kibot = 'kibot -q -c %s -s all pcbdraw_main -b "%s" -e "%s"' % ('kibot_pcbdraw.yaml', files[1], files[0])
+    files = get_kicad_files(source[0].abspath)
+    create_pcbdraw_config(env, "kibot_pcbdraw.yaml", target[0].get_suffix())
+    kibot = 'kibot -q -c %s -b "%s" -e "%s" -s all pcbdraw_main' % ('kibot_pcbdraw.yaml', files[1], files[0])
     env.Execute(kibot)
-    os.rename(("%s-top.svg" % get_kicad_name(source[0].path)), target[0].path)
+    os.rename(("%s-top.svg" % get_kicad_name(source[0].path)), target[0].abspath)
     os.remove("kibot_pcbdraw.yaml")
     return None
 
 def kibot_gerbers(target, source, env):
 
-    files = get_kicad_files(source[0].path)
+    files = get_kicad_files(source[0].abspath)
     create_gerbers_jlcbcb_config(env, "kibot_gerbers.yaml")
-    kibot = 'kibot -q -c %s -s all JLCPCB -b "%s" -e "%s"' % ("kibot_gerbers.yaml", files[1], files[0])
+    kibot = 'kibot -q -c %s -b "%s" -e "%s" -s all JLCPCB' % ("kibot_gerbers.yaml", files[1], files[0])
     env.Execute(kibot)
-    os.rename(("JLCPCB/%s-JLCPCB.zip" % get_kicad_name(source[0].path)), target[0].path)
+    os.rename(("JLCPCB/%s-JLCPCB.zip" % get_kicad_name(source[0].path)), target[0].abspath)
     shutil.rmtree('JLCPCB')
     os.remove("kibot_gerbers.yaml")
     return None
