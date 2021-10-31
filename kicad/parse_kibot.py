@@ -1,4 +1,31 @@
 import re
+import xml.etree.ElementTree as ET
+
+def bom_parser(source) :
+    
+    print('============= parse bom: %s ' % source)
+    target = []
+    root = ET.parse(source).getroot()
+
+    for compomnents in root.findall('components'):
+        for c in compomnents.findall('comp'):
+            print(c)
+            if c.find('libsource').get('lib') != 'Mechanical' :
+                description = ''
+                for f in c.findall('fields/field'):
+                    if f.get('name') == 'Description' :
+                        description = f.text
+                if description == '':
+                    description = c.find('footprint').text
+
+                target.append({
+                    'ref': c.get('ref'), 
+                    'value': c.find('value').text, 
+                    'datasheet': c.find('datasheet').text, 
+                    'description': description
+                })
+
+    return target
 
 def kibot_parser(source) :
 

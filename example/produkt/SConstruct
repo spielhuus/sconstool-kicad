@@ -1,0 +1,14 @@
+import os
+
+env = Environment(ENV = os.environ,
+        tools=['default', 'kicad'], 
+        KICAD_ENVIRONMENT_VARS={'kibot': '../kibot.yaml'})
+
+env.preflight('shifter_report.json', os.path.join('produkt.pro'))
+env.schema('produkt-main-schematic.pdf', os.path.join('produkt.pro'))
+env.pcb('produkt_main_pcb.png', os.path.join('produkt.pro'))
+env.gerbers('produkt_main_JLCPCB.zip', os.path.join('produkt.pro'))
+env.bom('produkt-bom.json', os.path.join('produkt.pro'))
+
+Clean(os.path.join('produkt.pro'), 'fp-info-cache')
+Clean(os.path.join('produkt.pro'), 'produkt.pro-bak')

@@ -5,6 +5,7 @@ from os import path as ospath
 from pathlib import Path
 
 syspath.append("..")
+
 #syspath.append(Path(ospath.abspath('')).resolve())
 
 import kicad
@@ -16,6 +17,9 @@ class TestParseFiles(unittest.TestCase):
 
     def test_pcb(self):
         self.assertEqual( kicad.get_kicad_files('/foo/bar.pro')[1], '/foo/bar.kicad_pcb')
+
+    def test_name(self):
+        self.assertEqual( kicad.get_kicad_name('/foo/bar.pro'), 'bar')
 
 class TestParseKibot(unittest.TestCase):
 

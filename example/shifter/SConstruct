@@ -7,12 +7,14 @@ import os
 # it need only be set on each environment at *some point*.
 env = Environment(ENV = {'PATH' : os.environ['PATH']},
         tools=['default', 'kicad'], 
-        KICAD_ENVIRONMENT_VARS={'kibot': './kibot.yaml'})
+        KICAD_ENVIRONMENT_VARS={'kibot': '../kibot.yaml'})
 
 # A simple case
 #nbconvert_env = env.Clone(NBCONVERT_CONTEXT={'passed_in_str': 'Passed in string'})
-env.preflight('shifter_report.json', os.path.join('shifter', 'shifter.pro'))
-env.schema('shifter_report.json', os.path.join('shifter', 'shifter.pro'))
+#env.preflight('shifter_report.json', os.path.join('shifter.pro'))
+env.schema('shifter-main-schematic.pdf', os.path.join('shifter.pro'))
+env.pcb('schifter_main_pcb.pdf', os.path.join('shifter.pro'))
+env.gerbers('shifter_main_JLCPCB.zip', os.path.join('shifter.pro'))
 
 # Now with templates in different directories
 #jinja_env_2 = jinja_env.Clone(
