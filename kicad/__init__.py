@@ -262,66 +262,70 @@ def get_kicad_name(source):
 def kibot_bom(target, source, env):
 
     files = get_kicad_files(source[0].abspath)
-    create_preflight_config(env, "kibot_preflight.yaml", update_xml=True, run_erc=False, 
+    conf_file = "%s/kibot_preflight.yaml" % Path(source[0].path).parent
+    create_preflight_config(env, conf_file, update_xml=True, run_erc=False, 
                             run_drc=False, check_zone_fills=False, ignore_unconnected=True)
-    kibot = 'kibot -q -c %s -b "%s" -e "%s"' % ("kibot_preflight.yaml", files[1], files[0])
-    env.Execute(kibot)
+    kibot = 'kibot -q -c kibot_preflight.yaml -b "%s" -e "%s"' % (files[1], files[0])
+    env.Execute(kibot, chdir=source[0].get_dir())
     with open(target[0].abspath, 'w') as file:
-        json.dump(parse_kibot.bom_parser(("%s.xml" % get_kicad_name(source[0].path))), file)
-    os.remove("kibot_preflight.yaml")
-    os.remove(("%s.xml" % get_kicad_name(source[0].path)))
-    os.remove(("%s.csv" % get_kicad_name(source[0].path)))
+        json.dump(parse_kibot.bom_parser(("%s/%s.xml" % (source[0].get_dir(), get_kicad_name(source[0].path)))), file)
+    os.remove(conf_file)
+    os.remove(("%s/%s.xml" % (source[0].get_dir(), get_kicad_name(source[0].path))))
+    os.remove(("%s/%s.csv" % (source[0].get_dir(), get_kicad_name(source[0].path))))
 
     return None
 
 def kibot_preflight(target, source, env):
 
     files = get_kicad_files(source[0].abspath)
-    print(files[0])
-    create_preflight_config(env, "kibot_preflight.yaml")
-    kibot = 'kibot -q -c %s -b "%s" -e "%s"' % ("kibot_preflight.yaml", files[1], files[0])
-    env.Execute(kibot)
+    conf_file = "%s/kibot_preflight.yaml" % Path(source[0].path).parent
+    create_preflight_config(env, conf_file)
+    kibot = 'kibot -q -c kibot_preflight.yaml -b "%s" -e "%s"' % (files[1], files[0])
+    env.Execute(kibot, chdir=source[0].get_dir())
     with open(target[0].abspath, 'w') as file:
         result = []
-        result.append(parse_kibot.kibot_parser(("%s-drc.txt" % get_kicad_name(source[0].path))))
-        result.append(parse_kibot.kibot_parser(("%s-erc.txt" % get_kicad_name(source[0].path))))
+        result.append(parse_kibot.kibot_parser(("%s/%s-drc.txt" % (source[0].get_dir(), get_kicad_name(source[0].path)))))
+        result.append(parse_kibot.kibot_parser(("%s/%s-erc.txt" % (source[0].get_dir(), get_kicad_name(source[0].path)))))
         json.dump(result, file)
 
-    os.remove("kibot_preflight.yaml")
-    os.remove(("%s-drc.txt" % get_kicad_name(source[0].path)))
-    os.remove(("%s-erc.txt" % get_kicad_name(source[0].path)))
+    os.remove(conf_file)
+    os.remove(("%s/%s-drc.txt" % (source[0].get_dir(), get_kicad_name(source[0].path))))
+    os.remove(("%s/%s-erc.txt" % (source[0].get_dir(), get_kicad_name(source[0].path))))
 
     return None
 
 def kibot_schema(target, source, env):
 
     files = get_kicad_files(source[0].abspath)
-    create_schema_config(env, "kibot_schema.yaml")
-    kibot = 'kibot -q -c %s -b "%s" -e "%s" -s all pdf_sch_print' % ("kibot_schema.yaml", files[1], files[0])
-    env.Execute(kibot)
-    os.rename(("%s-schematic.pdf" % get_kicad_name(source[0].path)), target[0].abspath)
-    os.remove("kibot_schema.yaml")
+    conf_file = "%s/kibot_schema.yaml" % Path(source[0].path).parent
+    create_schema_config(env, conf_file)
+    kibot = 'kibot -q -c kibot_schema.yaml -b "%s" -e "%s" -s all pdf_sch_print' % (files[1], files[0])
+    env.Execute(kibot, chdir=source[0].get_dir())
+    os.rename("%s/%s-schematic.pdf" % (source[0].get_dir(), get_kicad_name(source[0].path)), target[0].abspath)
+    os.remove(conf_file)
     return None
 
 def kibot_pcb(target, source, env):
 
     files = get_kicad_files(source[0].abspath)
-    create_pcbdraw_config(env, "kibot_pcbdraw.yaml", target[0].get_suffix())
-    kibot = 'kibot -q -c %s -b "%s" -e "%s" -s all pcbdraw_main' % ('kibot_pcbdraw.yaml', files[1], files[0])
-    env.Execute(kibot)
-    os.rename(("%s-top.svg" % get_kicad_name(source[0].path)), target[0].abspath)
-    os.remove("kibot_pcbdraw.yaml")
+    conf_file = "%s/kibot_pcbdraw.yaml" % Path(source[0].path).parent
+    create_pcbdraw_config(env, conf_file, source[0].suffix)
+    kibot = 'kibot -q -c kibot_pcbdraw.yaml -b "%s" -e "%s" -s all pcbdraw_main' % (files[1], files[0])
+    env.Execute(kibot, chdir=source[0].get_dir())
+    os.rename(("%s/%s-top.svg" % (source[0].get_dir(), get_kicad_name(source[0].path))), target[0].abspath)
+    os.remove(conf_file)
     return None
 
 def kibot_gerbers(target, source, env):
 
     files = get_kicad_files(source[0].abspath)
-    create_gerbers_jlcbcb_config(env, "kibot_gerbers.yaml")
-    kibot = 'kibot -q -c %s -b "%s" -e "%s" -s all JLCPCB' % ("kibot_gerbers.yaml", files[1], files[0])
-    env.Execute(kibot)
-    os.rename(("JLCPCB/%s-JLCPCB.zip" % get_kicad_name(source[0].path)), target[0].abspath)
-    shutil.rmtree('JLCPCB')
-    os.remove("kibot_gerbers.yaml")
+    conf_file = "%s/kibot_gerbers.yaml" % Path(source[0].path).parent
+    create_gerbers_jlcbcb_config(env, conf_file)
+    kibot = 'kibot -q -c kibot_gerbers.yaml -b "%s" -e "%s" -s all JLCPCB' % (files[1], files[0])
+    env.Execute(kibot, chdir=source[0].get_dir())
+    os.rename(("%s/JLCPCB/%s-JLCPCB.zip" % (source[0].get_dir(), get_kicad_name(source[0].path))), target[0].abspath)
+    shutil.rmtree('%s/JLCPCB' % source[0].get_dir())
+    os.remove(conf_file)
     return None
 
 def generate(env):

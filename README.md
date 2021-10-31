@@ -40,12 +40,6 @@ env.gerbers('project_JLCPCB.zip', kicad_project.pro)
 env.bom('project_bom.json', kicad_project.pro)
 '''
 
-target call when the kicad project is in a subdirectory
-
-'''
-env.preflight(os.path.abspath('subdir/project_report.json'), os.path.abspath('subdir/kicad_project.pro'), chdir='subdir')
-'''
-
 # configuration
 
 ## general options
