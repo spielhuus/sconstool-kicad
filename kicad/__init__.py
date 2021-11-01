@@ -1,5 +1,4 @@
-#
-# Copyright (c) 2021 spielhuus <spielhuus@gmail.com>
+#!/usr/bin/env python
 #
 # Permission is hereby granted, free of charge, to any person obtaining
 # a copy of this software and associated documentation files (the
@@ -149,9 +148,6 @@ def create_pcbdraw_config(env, path, ext) :
         }}
     ]}
 
-#    if env['KICAD_ENVIRONMENT_VARS']['pcb'] and env['KICAD_ENVIRONMENT_VARS']['pcb']['libs'] :
-#        conf['outputs'][1]['libs'] = env['KICAD_ENVIRONMENT_VARS']['pcb']['libs']
-
     with open(path, 'w') as file:
         file.write(yaml.dump(conf))
 
@@ -234,23 +230,6 @@ def create_gerbers_jlcbcb_config(env, path) :
     ))
     return None
 
-# def create_kibot_config(env, path) :
-
-#     config = '''kibot:
-#   version: 1
-
-# preflight:
-#   run_erc: %s
-#   update_xml: %s
-#   run_drc: %s
-#   check_zone_fills: %s
-#   ignore_unconnected: %s
-
-# ''' % ('true', 'true','true','true','true')
-    
-#     with open(path, 'w') as file:
-#         file.write(config)
-
 def get_kicad_files(source):
     file = source
     return [file.replace('.pro', '.sch'), file.replace('.pro', '.kicad_pcb')]
@@ -260,6 +239,8 @@ def get_kicad_name(source):
     return file.replace('.pro', '')
 
 def kibot_bom(target, source, env):
+    project_name = env['project_name']
+    board = get_kicad_name(source[0].path)
 
     files = get_kicad_files(source[0].abspath)
     conf_file = "%s/kibot_preflight.yaml" % Path(source[0].path).parent
@@ -267,30 +248,34 @@ def kibot_bom(target, source, env):
                             run_drc=False, check_zone_fills=False, ignore_unconnected=True)
     kibot = 'kibot -q -c kibot_preflight.yaml -b "%s" -e "%s"' % (files[1], files[0])
     env.Execute(kibot, chdir=source[0].get_dir())
+    result = {env['project_name']: {board: {}}}
+    parse_kibot.bom_parser(("%s/%s.xml" % (source[0].get_dir(), board)), result[project_name][board])
     with open(target[0].abspath, 'w') as file:
-        json.dump(parse_kibot.bom_parser(("%s/%s.xml" % (source[0].get_dir(), get_kicad_name(source[0].path)))), file)
+        json.dump(result, file)
     os.remove(conf_file)
-    os.remove(("%s/%s.xml" % (source[0].get_dir(), get_kicad_name(source[0].path))))
-    os.remove(("%s/%s.csv" % (source[0].get_dir(), get_kicad_name(source[0].path))))
+    os.remove(("%s/%s.xml" % (source[0].get_dir(), board)))
+    os.remove(("%s/%s.csv" % (source[0].get_dir(), board)))
 
     return None
 
 def kibot_preflight(target, source, env):
+    project_name = env['project_name']
+    board = get_kicad_name(source[0].path)
 
     files = get_kicad_files(source[0].abspath)
     conf_file = "%s/kibot_preflight.yaml" % Path(source[0].path).parent
     create_preflight_config(env, conf_file)
     kibot = 'kibot -q -c kibot_preflight.yaml -b "%s" -e "%s"' % (files[1], files[0])
     env.Execute(kibot, chdir=source[0].get_dir())
+    result = {env['project_name']: {board: {}}}
+    parse_kibot.kibot_parser(("%s/%s-drc.txt" % (source[0].get_dir(), board)), result[project_name][board])
+    parse_kibot.kibot_parser(("%s/%s-erc.txt" % (source[0].get_dir(), board)), result[project_name][board])
     with open(target[0].abspath, 'w') as file:
-        result = []
-        result.append(parse_kibot.kibot_parser(("%s/%s-drc.txt" % (source[0].get_dir(), get_kicad_name(source[0].path)))))
-        result.append(parse_kibot.kibot_parser(("%s/%s-erc.txt" % (source[0].get_dir(), get_kicad_name(source[0].path)))))
         json.dump(result, file)
 
     os.remove(conf_file)
-    os.remove(("%s/%s-drc.txt" % (source[0].get_dir(), get_kicad_name(source[0].path))))
-    os.remove(("%s/%s-erc.txt" % (source[0].get_dir(), get_kicad_name(source[0].path))))
+    os.remove(("%s/%s-drc.txt" % (source[0].get_dir(), board)))
+    os.remove(("%s/%s-erc.txt" % (source[0].get_dir(), board)))
 
     return None
 
@@ -328,9 +313,16 @@ def kibot_gerbers(target, source, env):
     os.remove(conf_file)
     return None
 
+def kibot_combine_reports(target, source, env):
+    source_files = []
+    for s in source :
+        source_files.append(s.abspath)
+
+    with open(target[0].abspath, 'w') as file:
+        json.dump(parse_kibot.combine_reports(source_files), file)
+
 def generate(env):
 
-    print("generate kicad")
     env.SetDefault(KICAD_CONTEXT={})
     env.SetDefault(KICAD_ENVIRONMENT_VARS={})
     env.SetDefault(KICAD_TEMPLATE_SEARCHPATH=[])
@@ -340,13 +332,10 @@ def generate(env):
     env['BUILDERS']['pcb'] = SCons.Builder.Builder(action=kibot_pcb)
     env['BUILDERS']['gerbers'] = SCons.Builder.Builder(action=kibot_gerbers)
     env['BUILDERS']['bom'] = SCons.Builder.Builder(action=kibot_bom)
+    env['BUILDERS']['reports'] = SCons.Builder.Builder(action=kibot_combine_reports)
 
 def exists(env):
-    print("test library")
-    result = subprocess.run(['kibot', '--version'], stdout=subprocess.PIPE)
-    print(result.stdout)
-
-    # try:
-    #     import nbconvert
-    # except ImportError as e:
-    #     raise StopError(ImportError, e.message) 
+    try:
+        import eeschema
+    except ImportError as e:
+        raise StopError(ImportError, e.message) 
