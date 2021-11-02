@@ -85,68 +85,29 @@ def create_pcbdraw_config(env, path, ext) :
         },
     'outputs': [
         {
-        'name': 'pcbdraw_main',
-        'comment': 'Exports the PCB as a 2D model (SVG, PNG or JPG).',
-        'type': 'pcbdraw',
-        #dir: 'Example/pcbdraw_dir'
+        'name': 'pdf_pcb_print',
+        'comment': 'Exports the PCB to the most common exchange format. Suitable for printing.',
+        'type': 'pdf_pcb_print',
         'options': {
-        # [boolean=false] render the bottom side of the board (default is top side)
-        'bottom': False,
-        # [string|list(string)=''] Name of the filter to mark components as not fitted.
-        # A short-cut to use for simple cases where a variant is an overkill
-        #dnf_filter: ''
-        # [number=300] [10,1200] dots per inch (resolution) of the generated image
-        'dpi': 1200,
-        # [string='svg'] [svg,png,jpg] output format. Only used if no `output` is specified
-        'format': 'svg',
-        # [list(string)=[]] list of components to highlight
-        'highlight': [],
-        # [list(string)=[]] list of libraries
-        'libs': dict.get('libs') if 'libs' in dict else ['default', 'elektrophon', 'others'],
-        # [boolean=false] mirror the board
-        'mirror': False,
-        # [boolean=false] do not make holes transparent
-        'no_drillholes': False,
-        # [string='%f-%i%v.%x'] name for the generated file. Affected by global options
-        'output': '%f-%i%v.%x',
-        # [boolean=false] show placeholder for missing components
-        'placeholder': False,
-        # [dict|None] replacements for PCB references using components (lib:component)
-        #remap:
-        # [list(string)|string=none] [none,all] list of components to draw, can be also a string for none or all.
-        # The default is none
-        'show_components': 'all',
-        # [string|dict] PCB style (colors). An internal name, the name of a JSON file or the style options
-        'style': {
-            # [string='#4ca06c'] color for the board without copper (covered by solder mask)
-            'board': '#f0f0f0',
-            # [string='#9c6b28'] color for the PCB core (not covered by solder mask)
-            'clad': '#9c6b28',
-            # [string='#417e5a'] color for the copper zones (covered by solder mask)
-            'copper': '#417e5a',
-            # [boolean=false] highlight over the component (not under)
-            'highlight_on_top': False,
-            # [number=1.5] [0,1000] how much the highlight extends around the component [mm]
-            'highlight_padding': 1.5,
-            # [string='stroke:none;fill:#ff0000;opacity:0.5;'] SVG code for the highlight style
-            'highlight_style': 'stroke:none;fill:#ff0000;opacity:0.5;',
-            # [string='#000000'] color for the outline
-            'outline': '#000000',
-            # [string='#b5ae30'] color for the exposed pads (metal finish)
-            'pads': '#b5ae30',
-            # [string='#f0f0f0'] color for the silk screen
-            'silk': '#000000',
-            # [string='#bf2600'] color for the V-CUTS
-            'vcut': '#bf2600'
+            'dnf_filter': '',
+            'drill_marks': 'full',
+            'mirror': False,
+            'monochrome': False,
+            'output': '%f-pcb.%x',
+            'plot_sheet_reference': True,
+            'scaling': 1.0,
+            'separated': False,
+            'variant': '',
         },
-        # [string=''] Board variant to apply
-        'variant': '',
-        # [boolean=false] render V-CUTS on the Cmts.User layer
-        'vcuts': False,
-        # [string='visible'] [visible,all,none] using visible only the warnings about components in the visible side are generated
-        'warnings': 'visible'
-        }}
-    ]}
+        'layers': [ 
+            'F.Cu',
+            'B.Cu',
+            'B.SilkS',
+            'F.SilkS',
+            'B.Mask',
+            'F.Mask'
+        ]
+    }]}
 
     with open(path, 'w') as file:
         file.write(yaml.dump(conf))
@@ -295,9 +256,9 @@ def kibot_pcb(target, source, env):
     files = get_kicad_files(source[0].abspath)
     conf_file = "%s/kibot_pcbdraw.yaml" % Path(source[0].path).parent
     create_pcbdraw_config(env, conf_file, source[0].suffix)
-    kibot = 'kibot -q -c kibot_pcbdraw.yaml -b "%s" -e "%s" -s all pcbdraw_main' % (files[1], files[0])
+    kibot = 'kibot -q -c kibot_pcbdraw.yaml -b "%s" -e "%s" -s all pdf_pcb_print' % (files[1], files[0])
     env.Execute(kibot, chdir=source[0].get_dir())
-    os.rename(("%s/%s-top.svg" % (source[0].get_dir(), get_kicad_name(source[0].path))), target[0].abspath)
+    os.rename(("%s/%s-pcb.pdf" % (source[0].get_dir(), get_kicad_name(source[0].path))), target[0].abspath)
     os.remove(conf_file)
     return None
 

@@ -12,7 +12,7 @@ REPORTS = NodeList()
 for board in ['main', 'mount', 'panel'] :
     REPORTS += env.preflight('%s/kontur_%s_report.json' % (board,board), '%s/%s.pro' % (board,board), project_name='kontur')
     env.schema('%s/kontur_%s_schematic.pdf' % (board,board), '%s/%s.pro' % (board,board))
-    env.pcb('%s/kontur_%s_pcb.svg' % (board,board), '%s/%s.pro' % (board,board))
+    env.pcb('%s/kontur_%s_pcb.pdf' % (board,board), '%s/%s.pro' % (board,board))
     env.gerbers('%s/kontur_%s_JLCPCB.zip' % (board,board), '%s/%s.pro' % (board,board))
     REPORTS += env.bom('%s/kontur_%s_bom.json' % (board,board), '%s/%s.pro' % (board,board), project_name='kontur')
 
