@@ -28,7 +28,7 @@ With the `KICAD_ENVIRONMENT_VARS` the kibot utility can be configured.
 Allowed targets are: `[pdf_pcb_print] [gerber]`
 The other targets can not be configured
 
-=== pdf_pcb_print
+### pdf_pcb_print
 
 valid options:
 - dnf_filter: [string|list(string)=''] Name of the filter to mark components as not fitted. A short-cut to use for simple cases where a variant is an overkill.
@@ -42,7 +42,7 @@ valid options:
 The layer selection:
 - layers: [list(dict)|list(string)|string] [all,selected,copper,technical,user] List of PCB layers to include in the PDF.
 
-=== gerber
+### gerber
 
 valid options:
 - exclude_edge_layer: [boolean=true] Do not include the PCB edge layer.
@@ -88,16 +88,15 @@ will be `report`.
 
 ```json
 {
-        'project_name': {
-                'board': {
-                        'bom': [],
-                        'erc': [],
-                        'drc': [],
-                        'unconected': []
-                },
-
-        }
-}
+    "project_name": {
+            "board": {
+                    "bom": [],
+                    "erc": [],
+                    "drc": [],
+                    "unconected": []
+            }
+    }
+} 
 ```
 
 ## Continous Integration
