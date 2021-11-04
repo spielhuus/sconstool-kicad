@@ -21,3 +21,4 @@ for board in ['main', 'mount', 'panel'] :
     Clean(os.path.join(board, '%s.pro' % board), Glob('%s/*-bak' % board)) 
 
 env.reports('kontur_reports.json', REPORTS)
+env.report2xunit('kontur_reports.xml', 'kontur_reports.json')

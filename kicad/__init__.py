@@ -33,6 +33,7 @@ import subprocess
 from pathlib import Path
 
 from kicad import parse_kibot
+from kicad import report2xunit
 
 def create_preflight_config(env, path, update_xml=False, run_erc=True, run_drc=True, 
                             check_zone_fills=True, ignore_unconnected=False) :
@@ -70,9 +71,7 @@ def create_schema_config(env, path) :
     return None
 
 def create_pcbdraw_config(env, path, ext) :
-    dict = {}
-    if( 'KICAD_ENVIRONMENT_VARS' in env.Dictionary() and 'pcb' in env.Dictionary().get('KICAD_ENVIRONMENT_VARS')) :
-        dict = env.Dictionary().get('KICAD_ENVIRONMENT_VARS').get('pcb')
+    dict = env.get('KICAD_ENVIRONMENT_VARS', {}).get('pdf_pcb_print', {})
     
     conf = {'kibot': {'version': 1}, 
     'preflight': 
@@ -89,24 +88,25 @@ def create_pcbdraw_config(env, path, ext) :
         'comment': 'Exports the PCB to the most common exchange format. Suitable for printing.',
         'type': 'pdf_pcb_print',
         'options': {
-            'dnf_filter': '',
-            'drill_marks': 'full',
-            'mirror': False,
-            'monochrome': False,
             'output': '%f-pcb.%x',
-            'plot_sheet_reference': True,
-            'scaling': 1.0,
-            'separated': False,
-            'variant': '',
+            'dnf_filter': dict.get('options', {}).get('dnf_filter', ''),
+            'drill_marks': dict.get('options', {}).get('dnf_filter', 'full'),
+            'mirror': dict.get('options', {}).get('mirror', False),
+            'monochrome': dict.get('options', {}).get('monochrome', False),
+            'plot_sheet_reference': dict.get('options', {}).get('plot_sheet_reference', True),
+            'scaling': dict.get('options', {}).get('scaling', 1.0),
+            'separated': dict.get('options', {}).get('separated', False),
+            'variant': dict.get('options', {}).get('variant', ''),
+            #'hide_excluded': dict.get('options', {}).get('hide_excluded', False),
         },
-        'layers': [ 
+        'layers': dict.get('layers', [ 
             'F.Cu',
             'B.Cu',
             'B.SilkS',
             'F.SilkS',
             'B.Mask',
             'F.Mask'
-        ]
+        ])
     }]}
 
     with open(path, 'w') as file:
@@ -115,6 +115,8 @@ def create_pcbdraw_config(env, path, ext) :
     return None
 
 def create_gerbers_jlcbcb_config(env, path) :
+    dict = env.get('KICAD_ENVIRONMENT_VARS', {}).get('gerber', {})
+
     with open(path, 'w') as file:
         file.write(yaml.dump({'kibot': {'version': 1}, 
     'preflight': 
@@ -132,23 +134,24 @@ def create_gerbers_jlcbcb_config(env, path) :
         'type': 'gerber',
         'dir': 'JLCPCB',
         'options': {#&gerber_options
-            'exclude_edge_layer': True,
-            'exclude_pads_from_silkscreen': True,
-            'plot_sheet_reference': False,
-            'plot_footprint_refs': True,
-            'plot_footprint_values': False,
-            'force_plot_invisible_refs_vals': False,
-            'tent_vias': True,
-            'use_protel_extensions': False,
-            'create_gerber_job_file': False,
-            'disable_aperture_macros': True,
-            'gerber_precision': 4.6,
-            'use_gerber_x2_attributes': False,
-            'use_gerber_net_attributes': False,
-            'line_width': 0.1,
-            'subtract_mask_from_silk': True,
+            'exclude_edge_layer': dict.get('options', {}).get('exclude_edge_layer', True),
+            'exclude_pads_from_silkscreen': dict.get('options', {}).get('exclude_pads_from_silkscreen', True),
+            'plot_sheet_reference': dict.get('options', {}).get('plot_sheet_reference', False),
+            'plot_footprint_refs': dict.get('options', {}).get('plot_footprint_refs', True),
+            'plot_footprint_values': dict.get('options', {}).get('plot_footprint_values', False),
+            'force_plot_invisible_refs_vals': dict.get('options', {}).get('force_plot_invisible_refs_vals', False),
+            'tent_vias': dict.get('options', {}).get('tent_vias', True),
+            'use_protel_extensions': dict.get('options', {}).get('use_protel_extensions', False),
+            'create_gerber_job_file': dict.get('options', {}).get('create_gerber_job_file', False),
+            'disable_aperture_macros': dict.get('options', {}).get('disable_aperture_macros', True),
+            'gerber_precision': dict.get('options', {}).get('gerber_precision', 4.6),
+            'use_gerber_x2_attributes': dict.get('options', {}).get('use_gerber_x2_attributes', False),
+            'use_gerber_net_attributes': dict.get('options', {}).get('use_gerber_net_attributes', False),
+            'line_width': dict.get('options', {}).get('line_width', 0.1),
+            'subtract_mask_from_silk': dict.get('options', {}).get('subtract_mask_from_silk', True),
+            'use_aux_axis_as_origin': dict.get('options', {}).get('use_aux_axis_as_origin', False),
             },
-            'layers': [
+            'layers': dict.get('layers', [ 
             # Note: a more generic approach is to use 'copper' but then the filenames
             # are slightly different.
             'F.Cu',
@@ -158,7 +161,7 @@ def create_gerbers_jlcbcb_config(env, path) :
             'F.Mask',
             'B.Mask',
             'Edge.Cuts'
-            ]
+            ])
         },
         {
         'name': 'JLCPCB_drill',
@@ -200,7 +203,7 @@ def get_kicad_name(source):
     return file.replace('.pro', '')
 
 def kibot_bom(target, source, env):
-    project_name = env['project_name']
+    project_name = env.get('project_name', 'report')
     board = get_kicad_name(source[0].path)
 
     files = get_kicad_files(source[0].abspath)
@@ -220,7 +223,7 @@ def kibot_bom(target, source, env):
     return None
 
 def kibot_preflight(target, source, env):
-    project_name = env['project_name']
+    project_name = env.get('project_name', 'report')
     board = get_kicad_name(source[0].path)
 
     files = get_kicad_files(source[0].abspath)
@@ -282,6 +285,9 @@ def kibot_combine_reports(target, source, env):
     with open(target[0].abspath, 'w') as file:
         json.dump(parse_kibot.combine_reports(source_files), file)
 
+def xunit(target, source, env):
+        report2xunit.convert(source[0].abspath, target[0].abspath)
+
 def generate(env):
 
     env.SetDefault(KICAD_CONTEXT={})
@@ -294,6 +300,7 @@ def generate(env):
     env['BUILDERS']['gerbers'] = SCons.Builder.Builder(action=kibot_gerbers)
     env['BUILDERS']['bom'] = SCons.Builder.Builder(action=kibot_bom)
     env['BUILDERS']['reports'] = SCons.Builder.Builder(action=kibot_combine_reports)
+    env['BUILDERS']['report2xunit'] = SCons.Builder.Builder(action=xunit)
 
 def exists(env):
     try:
