@@ -142,11 +142,25 @@ def combine_reports(source) :
             reports = json.load(f)
             for name in reports :
                 if name not in result :
-                    result[name] = {}
+                    result[name] = {'summary': {}}
+                count_results(s, result[name]['summary'])
                 for board in reports[name] :
                     if board not in result[name] :
                         result[name][board] = {}
                     for report in reports[name][board] :
                         result[name][board][report] = reports[name][board][report]
-
+    print(result)
     return result
+
+def count_results(source, results) :
+    with open(source) as f:
+        reports = json.load(f)
+        for name in reports :
+            for board in reports[name] :
+                for report in reports[name][board] :
+                    if report != 'bom' :
+                        if report not in results :
+                            results[report] = len(reports[name][board][report])
+                        else :
+                            results[report] += len(reports[name][board][report])
+    return results

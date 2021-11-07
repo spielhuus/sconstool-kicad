@@ -35,4 +35,4 @@ from kicad.pcb_tool import create_gerbers
 class TestParseFiles(unittest.TestCase):
 
     def test_create_gerbers(self):
-        create_gerbers('example/shifter/shifter.kicad_pcb', 'gerbers', 'gerbers.zip')
+        create_gerbers('example/kontur/main/main.kicad_pcb', 'gerbers', 'gerbers.zip')
