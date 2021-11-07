@@ -149,7 +149,6 @@ def combine_reports(source) :
                         result[name][board] = {}
                     for report in reports[name][board] :
                         result[name][board][report] = reports[name][board][report]
-    print(result)
     return result
 
 def count_results(source, results) :
