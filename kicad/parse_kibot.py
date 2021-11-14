@@ -149,6 +149,7 @@ def combine_reports(source) :
                         result[name][board] = {}
                     for report in reports[name][board] :
                         result[name][board][report] = reports[name][board][report]
+    print(result)
     return result
 
 def count_results(source, results) :
@@ -156,10 +157,15 @@ def count_results(source, results) :
         reports = json.load(f)
         for name in reports :
             for board in reports[name] :
-                for report in reports[name][board] :
-                    if report != 'bom' :
-                        if report not in results :
-                            results[report] = len(reports[name][board][report])
-                        else :
-                            results[report] += len(reports[name][board][report])
+                if board == 'unit_test' :
+                    print(f'lookup test: {name}, {board}')
+                    test = reports[name][board]['report']['summary']
+                    results[board] = {'passed': test['passed'], 'num_tests': test['num_tests']}
+                else :
+                    for report in reports[name][board] :
+                        if report != 'bom' :
+                            if report not in results :
+                                results[report] = len(reports[name][board][report])
+                            else :
+                                results[report] += len(reports[name][board][report])
     return results
