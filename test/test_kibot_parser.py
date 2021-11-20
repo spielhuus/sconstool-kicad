@@ -34,6 +34,8 @@ comnbined_result_test = {'kontur': {'summary': {'drc': 0, 'unconnected': 0, 'erc
 
 import kicad
 from kicad import parse_kibot
+from kicad import report2xunit
+
 class TestParseFiles(unittest.TestCase):
 
     def test_schema(self):
@@ -80,3 +82,9 @@ class TestCombineResultsWithTests(unittest.TestCase):
 
     def test_combined_reports(self):
         self.assertEqual( parse_kibot.combine_reports(['test/files/kontur_main_bom.json', 'test/files/kontur_main_report.json', 'test/files/produkt_test.json']), comnbined_result_test)
+
+class TestReportXunit(unittest.TestCase):
+
+    def test_xunit_reports(self):
+        report2xunit.convert('test/files/report.json', 'test/files/report.xml')
+        self.assertTrue( Path('test/files/report.xml').exists )
