@@ -34,7 +34,6 @@ def convert(input, output) :
         test_cases = []
 
         for key2, value2 in value.items():
-            print(key2)
             if( key2 == 'callouts' or key2 == 'summary' ) :
                 continue
             elif( key2 == 'test' ) :
