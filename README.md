@@ -105,5 +105,5 @@ For the integration into a toolset like Jeknins there is the `report2xunit` targ
 json file into a junit xml file that can be processed by the tool. 
 
 ```python
-env.reports('project_reports.xml', 'project_reports.json')
+env.report2xunit('project_reports.xml', 'project_reports.json')
 ```
