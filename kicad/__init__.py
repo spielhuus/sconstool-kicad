@@ -36,7 +36,7 @@ from kicad import parse_kibot
 from kicad import report2xunit
 
 def create_preflight_config(env, path, update_xml=False, run_erc=True, run_drc=True, 
-                            check_zone_fills=True, ignore_unconnected=False) :
+                            check_zone_fills=True, ignore_unconnected=True) :
     with open(path, 'w') as file:
         file.write(yaml.dump({'kibot': {'version': 1}, 
     'preflight': 
@@ -45,7 +45,8 @@ def create_preflight_config(env, path, update_xml=False, run_erc=True, run_drc=T
          'update_xml':update_xml, 
          'run_drc': run_drc, 
          'check_zone_fills': check_zone_fills, 
-         'ignore_unconnected': ignore_unconnected
+         'ignore_unconnected': ignore_unconnected,
+         'erc_warnings': True
         }
     }))
     return None

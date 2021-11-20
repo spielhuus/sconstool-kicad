@@ -26,6 +26,7 @@ from sys import path as syspath
 from os import path as ospath
 from pathlib import Path
 import json
+import xml.etree.ElementTree as ET
 
 syspath.append("..")
 
@@ -87,4 +88,9 @@ class TestReportXunit(unittest.TestCase):
 
     def test_xunit_reports(self):
         report2xunit.convert('test/files/report.json', 'test/files/report.xml')
+        tree = ET.parse('test/files/report.xml')
+        root = tree.getroot()
+        for child in root:
+            print(child.tag, child.attrib)
+
         self.assertTrue( Path('test/files/report.xml').exists )

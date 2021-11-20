@@ -48,7 +48,9 @@ def convert(input, output) :
                     if( key3 == 'bom' ) :
                         continue
                     elif( key3 == 'erc' ) :
+                        print("erc")
                         for item in value3 :
+                            print(f"item: {item}")
                             out = ''
                             for con in item['con'] :
                                 out += con['x'] + '-' + con['y'] + ": " + con['message'] + "\n"
@@ -58,7 +60,9 @@ def convert(input, output) :
                             test_cases.append( test_case )
 
                     elif( key3 == 'drc' ) :
+                        print("drc")
                         for item in value3 :
+                            print(f"item: {item}")
                             out = ''
                             for con in item['con'] :
                                 out += con['x'] + '-' + con['y'] + ": " + con['message'] + "\n"
@@ -68,7 +72,9 @@ def convert(input, output) :
                             test_cases.append( test_case )
                         
                     elif( key3 == 'unconnected' ) :
+                        print("unconnected")
                         for item in value3 :
+                            print(f"item: {item}")
                             out = ''
                             for con in item['con'] :
                                 out += con['x'] + '-' + con['y'] + ": " + con['message'] + "\n"
