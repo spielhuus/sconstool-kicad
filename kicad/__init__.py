@@ -290,7 +290,7 @@ def xunit(target, source, env):
         report2xunit.convert(source[0].abspath, target[0].abspath)
 
 def kicad_scan(node, env, path):
-    name = node.rsplit('.', 1)[0]
+    name = node.get_abspath().rsplit('.', 1)[0]
     return [f"{name}.kicad_pcb", f"{name}.sch"]
 
 def generate(env):
@@ -299,7 +299,7 @@ def generate(env):
     env.SetDefault(KICAD_ENVIRONMENT_VARS={})
     env.SetDefault(KICAD_TEMPLATE_SEARCHPATH=[])
 
-    kiscan = Scanner(function = kicad_scan, skeys = ['.pro'])
+    kiscan = SCons.Script.Scanner(function = kicad_scan, skeys = ['.pro'])
     env['BUILDERS']['preflight'] = SCons.Builder.Builder(action=kibot_preflight, source_scanner = kiscan)
     env['BUILDERS']['schema'] = SCons.Builder.Builder(action=kibot_schema, source_scanner = kiscan)
     env['BUILDERS']['pcb'] = SCons.Builder.Builder(action=kibot_pcb, source_scanner = kiscan)
