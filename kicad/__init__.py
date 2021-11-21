@@ -44,7 +44,7 @@ def create_preflight_config(env, path, update_xml=False, run_erc=True, run_drc=T
         {
          'run_erc': run_erc, 
          'update_xml':update_xml, 
-         'run_drc': run_drc, 
+         #'run_drc': run_drc, 
          'check_zone_fills': check_zone_fills, 
          'ignore_unconnected': ignore_unconnected,
          'erc_warnings': False
@@ -229,10 +229,21 @@ def kibot_preflight(target, source, env):
     board = get_kicad_name(source[0].path)
 
     files = get_kicad_files(source[0].abspath)
+
+    #run erc, drc, unconnected
     conf_file = "%s/kibot_preflight.yaml" % Path(source[0].path).parent
-    create_preflight_config(env, conf_file)
+    create_preflight_config(env, conf_file, update_xml=False, run_erc=True, 
+                            run_drc=False, check_zone_fills=False, ignore_unconnected=True)
     kibot = 'kibot -q -c kibot_preflight.yaml -b "%s" -e "%s"' % (files[1], files[0])
     env.Execute(kibot, chdir=source[0].get_dir())
+
+    #run drc
+    conf_file = "%s/kibot_preflight.yaml" % Path(source[0].path).parent
+    create_preflight_config(env, conf_file, update_xml=False, run_erc=False, 
+                            run_drc=True, check_zone_fills=True, ignore_unconnected=True)
+    kibot = 'kibot -q -c kibot_preflight.yaml -b "%s" -e "%s"' % (files[1], files[0])
+    env.Execute(kibot, chdir=source[0].get_dir())
+
     result = {env['project_name']: {board: {}}}
     parse_kibot.kibot_parser(("%s/%s-drc.txt" % (source[0].get_dir(), board)), result[project_name][board])
     parse_kibot.kibot_parser(("%s/%s-erc.txt" % (source[0].get_dir(), board)), result[project_name][board])
