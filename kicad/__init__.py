@@ -44,7 +44,7 @@ def create_preflight_config(env, path, update_xml=False, run_erc=True, run_drc=T
         {
          'run_erc': run_erc, 
          'update_xml':update_xml, 
-         #'run_drc': run_drc, 
+         'run_drc': run_drc, 
          'check_zone_fills': check_zone_fills, 
          'ignore_unconnected': ignore_unconnected,
          'erc_warnings': False
