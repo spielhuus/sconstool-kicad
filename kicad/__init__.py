@@ -46,7 +46,7 @@ def create_preflight_config(env, path, update_xml=False, run_erc=True, run_drc=T
          'run_drc': run_drc, 
          'check_zone_fills': check_zone_fills, 
          'ignore_unconnected': ignore_unconnected,
-         'erc_warnings': True
+         'erc_warnings': False
         }
     }))
     return None
@@ -289,17 +289,22 @@ def kibot_combine_reports(target, source, env):
 def xunit(target, source, env):
         report2xunit.convert(source[0].abspath, target[0].abspath)
 
+def kicad_scan(node, env, path):
+    name = node.rsplit('.', 1)[0]
+    return [f"{name}.kicad_pcb", f"{name}.sch"]
+
 def generate(env):
 
     env.SetDefault(KICAD_CONTEXT={})
     env.SetDefault(KICAD_ENVIRONMENT_VARS={})
     env.SetDefault(KICAD_TEMPLATE_SEARCHPATH=[])
 
-    env['BUILDERS']['preflight'] = SCons.Builder.Builder(action=kibot_preflight)
-    env['BUILDERS']['schema'] = SCons.Builder.Builder(action=kibot_schema)
-    env['BUILDERS']['pcb'] = SCons.Builder.Builder(action=kibot_pcb)
-    env['BUILDERS']['gerbers'] = SCons.Builder.Builder(action=kibot_gerbers)
-    env['BUILDERS']['bom'] = SCons.Builder.Builder(action=kibot_bom)
+    kiscan = Scanner(function = kicad_scan, skeys = ['.pro'])
+    env['BUILDERS']['preflight'] = SCons.Builder.Builder(action=kibot_preflight, source_scanner = kiscan)
+    env['BUILDERS']['schema'] = SCons.Builder.Builder(action=kibot_schema, source_scanner = kiscan)
+    env['BUILDERS']['pcb'] = SCons.Builder.Builder(action=kibot_pcb, source_scanner = kiscan)
+    env['BUILDERS']['gerbers'] = SCons.Builder.Builder(action=kibot_gerbers, source_scanner = kiscan)
+    env['BUILDERS']['bom'] = SCons.Builder.Builder(action=kibot_bom, source_scanner = kiscan)
     env['BUILDERS']['reports'] = SCons.Builder.Builder(action=kibot_combine_reports)
     env['BUILDERS']['report2xunit'] = SCons.Builder.Builder(action=xunit)
 
