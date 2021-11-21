@@ -28,6 +28,7 @@ import os
 import shutil
 import json
 import yaml
+import re
 
 import subprocess
 from pathlib import Path
@@ -291,7 +292,12 @@ def xunit(target, source, env):
 
 def kicad_scan(node, env, path):
     name = node.get_abspath().rsplit('.', 1)[0]
-    return [f"{name}.kicad_pcb", f"{name}.sch"]
+    result = [f"{name}.kicad_pcb", f"{name}.sch"]
+    include_re = re.compile(r'"(\S+).sch"', re.M)
+    with open(f"{name}.sch", 'r') as f :
+        for schema in include_re.findall(f.read()) :
+           result.append( f"{node.get_dir().get_abspath()}/{schema}.sch")
+    return result
 
 def generate(env):
 

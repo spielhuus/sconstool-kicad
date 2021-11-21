@@ -157,7 +157,7 @@ def create_gerbers(board, gerber_dir, zip_fname):
 #        self.settings = self.Get()
         #global zip_fname
         board = pcbnew.LoadBoard(board)
-        print(board)
+        #print(board)
         board_fname = board.GetFileName()
         board_dir = os.path.dirname(board_fname)
         board_basename = (os.path.splitext(
@@ -171,7 +171,7 @@ def create_gerbers(board, gerber_dir, zip_fname):
         refill(board)
         zipfiles = []
     # PLOT
-        print('PlotStart')
+        #print(('PlotStart')
         pc = pcbnew.PLOT_CONTROLLER(board)
         po = pc.GetPlotOptions()
 
@@ -232,7 +232,7 @@ def create_gerbers(board, gerber_dir, zip_fname):
             forceren(pc.GetPlotFileName(), targetname)
             layer_list[getindex(i)]['fname'] = targetname
             zipfiles.append(targetname)
-        print('Drill')
+        #print(('Drill')
     # DRILL
         drill_fname = ''
         drill_map_fname = ''
@@ -314,7 +314,7 @@ def create_gerbers(board, gerber_dir, zip_fname):
         ew.SetMapFileFormat(map_format)
         enable_map = len(drill_map_fname) > 0 or len(
             npth_map_fname) > 0
-        print('MapFile')
+        #print(('MapFile')
         ew.CreateDrillandMapFilesSet(gerber_dir, True, enable_map)
         # if self.settings.get('MergePTHandNPTH', False):
         #     if drill_fname:
@@ -348,7 +348,7 @@ def create_gerbers(board, gerber_dir, zip_fname):
             zipfiles.append(drill_report_fname)
 
     # OptionalFile
-        print('optional')
+        #print(('optional')
         files = [] #self.settings.get('OptionalFiles', [])
         for n in range(len(files)):
             if(len(files[n]['name'])):

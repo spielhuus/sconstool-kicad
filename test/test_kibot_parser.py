@@ -27,6 +27,7 @@ from os import path as ospath
 from pathlib import Path
 import json
 import xml.etree.ElementTree as ET
+import SCons
 
 syspath.append("..")
 
@@ -36,6 +37,22 @@ comnbined_result_test = {'kontur': {'summary': {'drc': 0, 'unconnected': 0, 'erc
 import kicad
 from kicad import parse_kibot
 from kicad import report2xunit
+
+class TestScanner(unittest.TestCase):
+
+    def test_scanner(self):
+        res = ['/github/workspace/example/kontur/main/main.kicad_pcb', '/github/workspace/example/kontur/main/main.sch']
+        fs = SCons.Node.FS.get_default_fs()
+        file = fs.File('example/kontur/main/main.pro')
+        self.assertEqual( kicad.kicad_scan(file, '', ''), res )
+
+    def test_scanner_subschema(self):
+        res = ['/github/workspace/example/vca/main/main.kicad_pcb', '/github/workspace/example/vca/main/main.sch',
+               '/github/workspace/example/vca/main/VCA1.sch', '/github/workspace/example/vca/main/VCA2.sch',
+               '/github/workspace/example/vca/main/VCA3.sch', '/github/workspace/example/vca/main/VCA4.sch']
+        fs = SCons.Node.FS.get_default_fs()
+        file = fs.File('example/vca/main/main.pro')
+        self.assertEqual( kicad.kicad_scan(file, '', ''), res )
 
 class TestParseFiles(unittest.TestCase):
 
@@ -90,7 +107,7 @@ class TestReportXunit(unittest.TestCase):
         report2xunit.convert('test/files/report.json', 'test/files/report.xml')
         tree = ET.parse('test/files/report.xml')
         root = tree.getroot()
-        for child in root:
-            print(child.tag, child.attrib)
+#        for child in root:
+#            print(child.tag, child.attrib)
 
         self.assertTrue( Path('test/files/report.xml').exists )
