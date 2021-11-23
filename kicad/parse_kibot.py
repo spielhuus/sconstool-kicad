@@ -55,10 +55,15 @@ def bom_parser(source, target) :
                 if description == '':
                     description = c.find('footprint').text
 
+                el_datasheet = c.find('datasheet').text
+                datasheet = '~'
+                if( datasheet != None ) :
+                    datasheet = el_datasheet.text
+
                 target_sorted[('%s%03d' % (letter(c.get('ref')), number(c.get('ref'))))] = {
                     'ref': c.get('ref'), 
                     'value': c.find('value').text, 
-                    'datasheet': c.find('datasheet').text, 
+                    'datasheet': datasheet, 
                     'description': description,
                     'footprint': c.find('footprint').text
                 }
