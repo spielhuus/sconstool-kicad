@@ -59,13 +59,18 @@ def bom_parser(source, target) :
                 datasheet = '~'
                 if( el_datasheet != None ) :
                     datasheet = el_datasheet.text
+                    
+                el_footprint = c.find('footprint')
+                footprint = '~'
+                if( el_footprint != None ) :
+                    footprint = el_footprint.text
 
                 target_sorted[('%s%03d' % (letter(c.get('ref')), number(c.get('ref'))))] = {
                     'ref': c.get('ref'), 
                     'value': c.find('value').text, 
                     'datasheet': datasheet, 
                     'description': description,
-                    'footprint': c.find('footprint').text
+                    'footprint': footprint
                 }
 
     target_grouped = {}
