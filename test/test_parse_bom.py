@@ -169,3 +169,10 @@ class TestParseBom(unittest.TestCase):
         response = {}
         parse_kibot.bom_parser('test/files/produkt.xml', response)
         self.assertEqual( response, bom_result)
+
+    def test_parse_without_datasheet(self):
+        response = {}
+        parse_kibot.bom_parser('test/files/filter.xml', response)
+        with open('tmp_data.txt', 'w') as outfile:
+            json.dump(response, outfile)
+            self.assertEqual( len(response['bom']), 19)

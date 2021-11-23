@@ -107,7 +107,4 @@ class TestReportXunit(unittest.TestCase):
         report2xunit.convert('test/files/report.json', 'test/files/report.xml')
         tree = ET.parse('test/files/report.xml')
         root = tree.getroot()
-#        for child in root:
-#            print(child.tag, child.attrib)
-
         self.assertTrue( Path('test/files/report.xml').exists )
