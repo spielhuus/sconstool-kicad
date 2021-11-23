@@ -48,22 +48,23 @@ def bom_parser(source, target) :
     for compomnents in root.findall('components'):
         for c in compomnents.findall('comp'):
             if c.find('libsource').get('lib') != 'Mechanical' :
+
+                el_footprint = c.find('footprint')
+                footprint = '~'
+                if( el_footprint != None ) :
+                    footprint = el_footprint.text
+
                 description = ''
                 for f in c.findall('fields/field'):
                     if f.get('name') == 'Description' :
                         description = f.text
                 if description == '':
-                    description = c.find('footprint').text
+                    description = footprint
 
                 el_datasheet = c.find('datasheet')
                 datasheet = '~'
                 if( el_datasheet != None ) :
                     datasheet = el_datasheet.text
-                    
-                el_footprint = c.find('footprint')
-                footprint = '~'
-                if( el_footprint != None ) :
-                    footprint = el_footprint.text
 
                 target_sorted[('%s%03d' % (letter(c.get('ref')), number(c.get('ref'))))] = {
                     'ref': c.get('ref'), 
